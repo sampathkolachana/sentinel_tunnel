@@ -85,7 +85,7 @@ func handleConnection(c net.Conn, db_name string,
 func handleSigleDbConnections(listening_port string, db_name string,
 	get_db_address_by_name get_db_address_by_name_function) {
 
-	listener, err := net.Listen("tcp", fmt.Sprintf(":%s", listening_port))
+	listener, err := net.Listen("tcp", fmt.Sprintf("0.0.0.0:%s", listening_port))
 	if err != nil {
 		st_logger.WriteLogMessage(st_logger.FATAL, "cannot listen to port ",
 			listening_port, err.Error())

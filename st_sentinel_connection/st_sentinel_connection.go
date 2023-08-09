@@ -121,7 +121,7 @@ func (c *Sentinel_connection) reconnectToSentinel() bool {
 		}
 
 		var err error
-		c.current_sentinel_connection, err = net.DialTimeout("tcp", sentinelAddr, 300*time.Millisecond)
+		c.current_sentinel_connection, err = net.DialTimeout("tcp6", sentinelAddr, 300*time.Millisecond)
 		if err == nil {
 			c.reader = bufio.NewReader(c.current_sentinel_connection)
 			c.writer = bufio.NewWriter(c.current_sentinel_connection)

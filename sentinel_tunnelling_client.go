@@ -71,6 +71,7 @@ func handleConnection(c net.Conn, db_name string,
 		c.Close()
 		return
 	}
+    time.Sleep(2000)
 	db_conn, err := net.Dial("tcp", db_address)
 	if err != nil {
 		st_logger.WriteLogMessage(st_logger.ERROR, "cannot connect to db ", db_name,

@@ -91,7 +91,7 @@ func handleSigleDbConnections(listening_port string, db_name string,
 			listening_port, err.Error())
 	}
 
-	st_logger.WriteLogMessage(st_logger.INFO, "listening on port ", listening_port,
+	st_logger.WriteLogMessage(st_logger.INFO, "listening on 0.0.0.0 on port ", listening_port,
 		" for connections to database: ", db_name)
 	for {
 		conn, err := listener.Accept()

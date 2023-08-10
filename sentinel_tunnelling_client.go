@@ -78,7 +78,7 @@ func handleConnection(c net.Conn, db_name string,
 		c.Close()
 		return
 	}
-    time.Sleep(2 * time.Seconds)
+    time.Sleep(2 * time.Second)
 	go createTunnelling(c, db_conn)
 	go createTunnelling(db_conn, c)
 }

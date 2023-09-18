@@ -98,7 +98,7 @@ func handleConnection(c net.TCPConn, db_name string,
 	}
 	st_logger.WriteLogMessage(st_logger.INFO, "got master address for db ", db_name, " : ", db_address)
 	st_logger.WriteLogMessage(st_logger.INFO, "connecting to db_address ", db_address, "...")
-	db_conn, err := net.Dial("tcp", db_address)
+	db_conn, err := net.DialTCP("tcp", db_address)
 	if err != nil {
 		st_logger.WriteLogMessage(st_logger.ERROR, "cannot connect to db ", db_name,
 			",", err.Error())
@@ -113,7 +113,7 @@ func handleConnection(c net.TCPConn, db_name string,
 func handleSigleDbConnections(listening_port string, db_name string,
 	get_db_address_by_name get_db_address_by_name_function) {
 
-	listener, err := net.Listen("tcp6", fmt.Sprintf(":%s", listening_port))
+	listener, err := net.ListenTCP("tcp6", fmt.Sprintf(":%s", listening_port))
 	if err != nil {
 		st_logger.WriteLogMessage(st_logger.FATAL, "cannot listen to port ",
 			listening_port, err.Error())
@@ -122,7 +122,7 @@ func handleSigleDbConnections(listening_port string, db_name string,
 	st_logger.WriteLogMessage(st_logger.INFO, "listening on port ", listening_port,
 		" for connections to database: ", db_name)
 	for {
-		conn, err := listener.Accept()
+		conn, err := listener.AcceptTCP()
 		if err != nil {
 			st_logger.WriteLogMessage(st_logger.FATAL, "cannot accept connections on port ",
 				listening_port, err.Error())

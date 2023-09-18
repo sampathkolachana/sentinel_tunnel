@@ -63,7 +63,7 @@ func createTunnelling_old(conn1 net.Conn, conn2 net.Conn) {
 	conn2.Close()
 }
 
-func createTunnelling(conn1 net.Conn, conn2 net.Conn) {
+func createTunnelling(conn1 net.TCPConn, conn2 net.TCPConn) {
     defer conn1.Close()
     defer conn2.Close()
 
@@ -86,7 +86,7 @@ func createTunnelling(conn1 net.Conn, conn2 net.Conn) {
     wg.Wait()
 }
 
-func handleConnection(c net.Conn, db_name string,
+func handleConnection(c net.TCPConn, db_name string,
 	get_db_address_by_name get_db_address_by_name_function) {
 	st_logger.WriteLogMessage(st_logger.INFO, "getting master address for db ", db_name, "...")
 	db_address, err := get_db_address_by_name(db_name)

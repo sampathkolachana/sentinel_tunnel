@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"errors"
 	"fmt"
+	"github.com/RedisLabs/sentinel_tunnel/st_logger"
 	"net"
 	"strconv"
 	"time"
@@ -111,6 +112,7 @@ func (c *Sentinel_connection) retrieveAddressByDbName() {
 }
 
 func (c *Sentinel_connection) reconnectToSentinel() bool {
+	st_logger.WriteLogMessage(st_logger.INFO, "reconnectToSentinel...")
 	for _, sentinelAddr := range c.sentinels_addresses {
 
 		if c.current_sentinel_connection != nil {
@@ -123,6 +125,7 @@ func (c *Sentinel_connection) reconnectToSentinel() bool {
 		var err error
 		c.current_sentinel_connection, err = net.DialTimeout("tcp", sentinelAddr, 300*time.Millisecond)
 		if err == nil {
+	        st_logger.WriteLogMessage(st_logger.INFO, "connect to sentinel success ", sentinelAddr)
 			c.reader = bufio.NewReader(c.current_sentinel_connection)
 			c.writer = bufio.NewWriter(c.current_sentinel_connection)
 			return true

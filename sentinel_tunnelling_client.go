@@ -64,6 +64,7 @@ func createTunnelling(conn1 net.Conn, conn2 net.Conn) {
 
 func handleConnection(c net.Conn, db_name string,
 	get_db_address_by_name get_db_address_by_name_function) {
+	st_logger.WriteLogMessage(st_logger.INFO, "getting master address for db ", db_name, "...")
 	db_address, err := get_db_address_by_name(db_name)
 	if err != nil {
 		st_logger.WriteLogMessage(st_logger.ERROR, "cannot get db address for ", db_name,
@@ -71,6 +72,8 @@ func handleConnection(c net.Conn, db_name string,
 		c.Close()
 		return
 	}
+	st_logger.WriteLogMessage(st_logger.INFO, "got master address for db ", db_name, " : ", db_address)
+	st_logger.WriteLogMessage(st_logger.INFO, "connecting to db_address ", db_address, "...")
 	db_conn, err := net.Dial("tcp", db_address)
 	if err != nil {
 		st_logger.WriteLogMessage(st_logger.ERROR, "cannot connect to db ", db_name,
@@ -78,6 +81,7 @@ func handleConnection(c net.Conn, db_name string,
 		c.Close()
 		return
 	}
+	st_logger.WriteLogMessage(st_logger.INFO, "tunnelling client to master db")
 	go createTunnelling(c, db_conn)
 	go createTunnelling(db_conn, c)
 }
@@ -99,6 +103,7 @@ func handleSigleDbConnections(listening_port string, db_name string,
 			st_logger.WriteLogMessage(st_logger.FATAL, "cannot accept connections on port ",
 				listening_port, err.Error())
 		}
+		st_logger.WriteLogMessage(st_logger.INFO, "accepted connection on port ", listening_port)
 		go handleConnection(conn, db_name, get_db_address_by_name)
 	}
 

@@ -10,6 +10,7 @@ import (
 	"io/ioutil"
 	"net"
 	"os"
+	"sync"
 	"time"
 )
 
@@ -56,13 +57,33 @@ func NewSentinelTunnellingClient(config_file_location string) *SentinelTunnellin
 	return &Tunnelling_client
 }
 
-func createTunnelling(conn1 net.Conn, conn2 net.Conn) {
-	_, err = io.Copy(conn1, conn2)
-    if err != nil {
-        st_logger.WriteLogMessage(st_logger.ERROR, "error copying data from conn2 to conn1, ", err.Error())
-    }
+func createTunnelling_old(conn1 net.Conn, conn2 net.Conn) {
+	io.Copy(conn1, conn2)
 	conn1.Close()
 	conn2.Close()
+}
+
+func createTunnelling(conn1 net.Conn, conn2 net.Conn) {
+    defer conn1.Close()
+    defer conn2.Close()
+
+    var wg sync.WaitGroup
+    wg.Add(2)
+
+    go func() {
+        defer wg.Done()
+        io.Copy(conn1, conn2)
+        // Signal peer that no more data is coming.
+        conn1.CloseWrite()
+    }()
+    go func() {
+        defer wg.Done()
+        io.Copy(conn2, conn1)
+        // Signal peer that no more data is coming.
+        conn2.CloseWrite()
+    }()
+
+    wg.Wait()
 }
 
 func handleConnection(c net.Conn, db_name string,
@@ -86,7 +107,7 @@ func handleConnection(c net.Conn, db_name string,
 	}
 	st_logger.WriteLogMessage(st_logger.INFO, "tunnelling client to master db")
 	go createTunnelling(c, db_conn)
-	go createTunnelling(db_conn, c)
+	// go createTunnelling(db_conn, c)
 }
 
 func handleSigleDbConnections(listening_port string, db_name string,

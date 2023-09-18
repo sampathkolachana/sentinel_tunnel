@@ -57,7 +57,10 @@ func NewSentinelTunnellingClient(config_file_location string) *SentinelTunnellin
 }
 
 func createTunnelling(conn1 net.Conn, conn2 net.Conn) {
-	io.Copy(conn1, conn2)
+	_,err = io.Copy(conn1, conn2)
+    if err != nil {
+        st_logger.WriteLogMessage(st_logger.ERROR, "error copying data from conn2 to conn1, ", err.Error())
+    }
 	conn1.Close()
 	conn2.Close()
 }

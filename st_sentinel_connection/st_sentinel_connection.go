@@ -17,7 +17,7 @@ type Get_master_addr_reply struct {
 
 type Sentinel_connection struct {
 	sentinels_addresses              []string
-	current_sentinel_connection      net.Conn
+	current_sentinel_connection      net.TCPConn
 	reader                           *bufio.Reader
 	writer                           *bufio.Writer
 	get_master_address_by_name_reply chan *Get_master_addr_reply
@@ -123,7 +123,9 @@ func (c *Sentinel_connection) reconnectToSentinel() bool {
 		}
 
 		var err error
-		c.current_sentinel_connection, err = net.DialTimeout("tcp", sentinelAddr, 300*time.Millisecond)
+		conn, err = net.DialTimeout("tcp", sentinelAddr, 300*time.Millisecond)
+		tcpConn, ok := conn.(*net.TCPConn)
+		c.current_sentinel_connection = tcpConn
 		if err == nil {
 	        st_logger.WriteLogMessage(st_logger.INFO, "connect to sentinel success ", sentinelAddr)
 			c.reader = bufio.NewReader(c.current_sentinel_connection)

@@ -4,12 +4,12 @@ import (
 	// "bufio"
 	"encoding/json"
 	"fmt"
-	"github.com/RedisLabs/sentinel_tunnel/st_logger"
-	"github.com/RedisLabs/sentinel_tunnel/st_sentinel_connection"
 	"io"
 	"io/ioutil"
 	"net"
 	"os"
+	"sentinel_tunnel/st_logger"
+	"sentinel_tunnel/st_sentinel_connection"
 	"sync"
 	"time"
 )
@@ -63,30 +63,30 @@ func createTunnelling_old(conn1 net.Conn, conn2 net.Conn) {
 	conn2.Close()
 }
 
-func createTunnelling(conn1 net.TCPConn, conn2 net.TCPConn) {
-    defer conn1.Close()
-    defer conn2.Close()
+func createTunnelling(conn1 net.Conn, conn2 net.Conn) {
+	defer conn1.Close()
+	defer conn2.Close()
 
-    var wg sync.WaitGroup
-    wg.Add(2)
+	var wg sync.WaitGroup
+	wg.Add(2)
 
-    go func() {
-        defer wg.Done()
-        io.Copy(conn1, conn2)
-        // Signal peer that no more data is coming.
-        conn1.CloseWrite()
-    }()
-    go func() {
-        defer wg.Done()
-        io.Copy(conn2, conn1)
-        // Signal peer that no more data is coming.
-        conn2.CloseWrite()
-    }()
+	go func() {
+		defer wg.Done()
+		io.Copy(conn1, conn2)
+		// Signal peer that no more data is coming.
+		conn1.Close()
+	}()
+	go func() {
+		defer wg.Done()
+		io.Copy(conn2, conn1)
+		// Signal peer that no more data is coming.
+		conn2.Close()
+	}()
 
-    wg.Wait()
+	wg.Wait()
 }
 
-func handleConnection(c net.TCPConn, db_name string,
+func handleConnection(c net.Conn, db_name string,
 	get_db_address_by_name get_db_address_by_name_function) {
 	st_logger.WriteLogMessage(st_logger.INFO, "getting master address for db ", db_name, "...")
 	db_address, err := get_db_address_by_name(db_name)
@@ -98,7 +98,7 @@ func handleConnection(c net.TCPConn, db_name string,
 	}
 	st_logger.WriteLogMessage(st_logger.INFO, "got master address for db ", db_name, " : ", db_address)
 	st_logger.WriteLogMessage(st_logger.INFO, "connecting to db_address ", db_address, "...")
-	db_conn, err := net.DialTCP("tcp", db_address)
+	db_conn, err := net.Dial("tcp", db_address)
 	if err != nil {
 		st_logger.WriteLogMessage(st_logger.ERROR, "cannot connect to db ", db_name,
 			",", err.Error())
@@ -113,7 +113,7 @@ func handleConnection(c net.TCPConn, db_name string,
 func handleSigleDbConnections(listening_port string, db_name string,
 	get_db_address_by_name get_db_address_by_name_function) {
 
-	listener, err := net.ListenTCP("tcp6", fmt.Sprintf(":%s", listening_port))
+	listener, err := net.Listen("tcp6", fmt.Sprintf(":%s", listening_port))
 	if err != nil {
 		st_logger.WriteLogMessage(st_logger.FATAL, "cannot listen to port ",
 			listening_port, err.Error())
@@ -122,7 +122,7 @@ func handleSigleDbConnections(listening_port string, db_name string,
 	st_logger.WriteLogMessage(st_logger.INFO, "listening on port ", listening_port,
 		" for connections to database: ", db_name)
 	for {
-		conn, err := listener.AcceptTCP()
+		conn, err := listener.Accept()
 		if err != nil {
 			st_logger.WriteLogMessage(st_logger.FATAL, "cannot accept connections on port ",
 				listening_port, err.Error())

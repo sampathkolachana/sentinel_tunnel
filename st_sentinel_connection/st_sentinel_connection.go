@@ -4,8 +4,8 @@ import (
 	"bufio"
 	"errors"
 	"fmt"
-	"github.com/RedisLabs/sentinel_tunnel/st_logger"
 	"net"
+	"sentinel_tunnel/st_logger"
 	"strconv"
 	"time"
 )
@@ -17,7 +17,7 @@ type Get_master_addr_reply struct {
 
 type Sentinel_connection struct {
 	sentinels_addresses              []string
-	current_sentinel_connection      net.TCPConn
+	current_sentinel_connection      net.Conn
 	reader                           *bufio.Reader
 	writer                           *bufio.Writer
 	get_master_address_by_name_reply chan *Get_master_addr_reply
@@ -123,11 +123,9 @@ func (c *Sentinel_connection) reconnectToSentinel() bool {
 		}
 
 		var err error
-		conn, err = net.DialTimeout("tcp", sentinelAddr, 300*time.Millisecond)
-		tcpConn, ok := conn.(*net.TCPConn)
-		c.current_sentinel_connection = tcpConn
+		c.current_sentinel_connection, err = net.DialTimeout("tcp", sentinelAddr, 300*time.Millisecond)
 		if err == nil {
-	        st_logger.WriteLogMessage(st_logger.INFO, "connect to sentinel success ", sentinelAddr)
+			st_logger.WriteLogMessage(st_logger.INFO, "connect to sentinel success ", sentinelAddr)
 			c.reader = bufio.NewReader(c.current_sentinel_connection)
 			c.writer = bufio.NewWriter(c.current_sentinel_connection)
 			return true
@@ -149,8 +147,8 @@ func NewSentinelConnection(addresses []string) (*Sentinel_connection, error) {
 		get_master_address_by_name:       make(chan string),
 		get_master_address_by_name_reply: make(chan *Get_master_addr_reply),
 		current_sentinel_connection:      nil,
-		reader: nil,
-		writer: nil,
+		reader:                           nil,
+		writer:                           nil,
 	}
 
 	if !connection.reconnectToSentinel() {

@@ -102,7 +102,8 @@ func (c *Sentinel_connection) retrieveAddressByDbName() {
 					err:   errors.New("failed to connect to any of the sentinel services"),
 				}
 			}
-			continue
+			// continue
+		    addr, err, is_client_closed = c.getMasterAddrByNameFromSentinel(db_name)
 		}
 		c.get_master_address_by_name_reply <- &Get_master_addr_reply{
 			reply: net.JoinHostPort(addr[0], addr[1]),
